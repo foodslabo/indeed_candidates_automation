@@ -40,6 +40,22 @@ async function executeDownload() {
     }
 }
 
+// アカウントを切り替える関数
+function switchAccount(accountType) {
+    try {
+        document.querySelector('button[data-testid="account-modal-toggle-expand"]').click()
+        setTimeout(() => {
+            linkButton = document.querySelector("div[role='treegrid'] a")
+            console.log(linkButton)
+            linkButton.click();
+            return true;
+        }, 1000)
+    } catch (error) {
+        console.error("アカウント切り替え中にエラーが発生しました:", error);
+        return false;
+    }
+}
+
 // ダウンロードボタンを作成する関数
 function createSimpleDownloadButton() {
     // すでにボタンが存在する場合は追加しない
@@ -58,10 +74,12 @@ function createSimpleDownloadButton() {
     overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
     overlay.style.zIndex = '99999';
     overlay.style.display = 'flex';
+    overlay.style.flexDirection = 'column';
     overlay.style.justifyContent = 'center';
     overlay.style.alignItems = 'center';
+    overlay.style.gap = '20px';
 
-    // ボタン要素を作成
+    // メインダウンロードボタン要素を作成
     const downloadButton = document.createElement('button');
     downloadButton.id = 'simple-download-button';
     downloadButton.innerText = '応募データをダウンロード';
@@ -76,6 +94,27 @@ function createSimpleDownloadButton() {
     downloadButton.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.3)';
     downloadButton.style.transition = 'all 0.3s ease';
 
+    // アカウント切り替えボタンのコンテナ
+    const switchButtonsContainer = document.createElement('div');
+    switchButtonsContainer.style.display = 'flex';
+    switchButtonsContainer.style.justifyContent = 'center';
+    switchButtonsContainer.style.gap = '15px';
+    switchButtonsContainer.style.marginTop = '20px';
+
+    // ホテルズラボボタン
+    const hotelsButton = document.createElement('button');
+    hotelsButton.innerText = 'アカウント切替';
+    hotelsButton.style.padding = '12px 20px';
+    hotelsButton.style.backgroundColor = '#FF9800'; // オレンジ
+    hotelsButton.style.color = 'white';
+    hotelsButton.style.border = 'none';
+    hotelsButton.style.borderRadius = '5px';
+    hotelsButton.style.fontSize = '16px';
+    hotelsButton.style.fontWeight = 'bold';
+    hotelsButton.style.cursor = 'pointer';
+    hotelsButton.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
+    hotelsButton.style.transition = 'all 0.2s ease';
+
     // ホバー効果
     downloadButton.addEventListener('mouseover', () => {
         downloadButton.style.backgroundColor = '#3367D6'; // 濃いめのブルー
@@ -87,7 +126,17 @@ function createSimpleDownloadButton() {
         downloadButton.style.transform = 'scale(1)';
     });
 
-    // クリックイベントを追加
+    hotelsButton.addEventListener('mouseover', () => {
+        hotelsButton.style.backgroundColor = '#F57C00'; // 濃いめのオレンジ
+        hotelsButton.style.transform = 'scale(1.05)';
+    });
+
+    hotelsButton.addEventListener('mouseout', () => {
+        hotelsButton.style.backgroundColor = '#FF9800';
+        hotelsButton.style.transform = 'scale(1)';
+    });
+
+    // メインダウンロードボタンのクリックイベント
     downloadButton.addEventListener('click', async () => {
         console.log('ワンクリックダウンロードボタンがクリックされました');
 
@@ -126,12 +175,32 @@ function createSimpleDownloadButton() {
         }
     });
 
-    // ボタンをオーバーレイに追加
+    // ホテルズラボボタンのクリックイベント
+    hotelsButton.addEventListener('click', async () => {
+        hotelsButton.innerText = '切替中...';
+        hotelsButton.disabled = true;
+        hotelsButton.style.backgroundColor = '#cccccc';
+
+        const success = switchAccount('hotels');
+
+        if (!success) {
+            setTimeout(() => {
+                hotelsButton.innerText = 'アカウント切替';
+                hotelsButton.disabled = false;
+                hotelsButton.style.backgroundColor = '#FF9800';
+            }, 2000);
+        }
+    });
+    // アカウント切り替えボタンをコンテナに追加
+    switchButtonsContainer.appendChild(hotelsButton);
+
+    // ボタンとアカウント切り替えコンテナをオーバーレイに追加
     overlay.appendChild(downloadButton);
+    overlay.appendChild(switchButtonsContainer);
 
     // オーバーレイをページに追加
     document.body.appendChild(overlay);
-    console.log('ワンクリックダウンロードボタンが追加されました');
+    console.log('ワンクリックダウンロードボタンとアカウント切り替えボタンが追加されました');
 }
 
 // ページ読み込み後に実行
@@ -149,7 +218,6 @@ const observer = new MutationObserver((mutations) => {
     // ボタンがなければ作成
     if (!document.getElementById('download-overlay')) {
         createSimpleDownloadButton();
-        removeSelectionButtons();
     }
 });
 
