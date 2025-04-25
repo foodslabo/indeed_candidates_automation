@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Indeed応募者情報自動ダウンロード",
+  "version": "1.0",
+  "description": "Indeedの管理者ページから応募者の応募データを自動でダウンロードする拡張機能",
+  "permissions": ["activeTab", "scripting"],
+  "action": {
+    "icons": {
+      "128": "icons/cs128.png"
+    },
+    "default_title": "Indeed応募者情報自動ダウンロード"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://employers.indeed.com/candidates/view?*"],
+      "js": ["src/viewPageDownload.js"],
+      "run_at": "document_end"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}
